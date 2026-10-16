@@ -26,19 +26,22 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                withCredentials([
-                    string(
-                        credentialsId: 'booklibrary-db-password',
-                        variable: 'DB_PASSWORD'
-                    )
-                ]) {
-                    bat '"%DOCKER%" compose up -d --wait database'
-                    bat '"%DOCKER%" compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
-                }
-            }
+
+stage('Test') {
+    steps {
+        withCredentials([
+            string(
+                credentialsId: 'booklibrary-db-password',
+                variable: 'DB_PASSWORD'
+            )
+        ]) {
+            bat '"%DOCKER%" compose up -d --wait --remove-orphans database'
+
+            bat '"%DOCKER%" compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
         }
+    }
+}
+
 
         stage('Build') {
             steps {
