@@ -35,7 +35,7 @@ pipeline {
                     )
                 ]) {
                     bat '"%DOCKER%" compose up -d --wait database'
-                    bat '"%DOCKER%" compose run --rm --build book-api sh -c "npm ci --include=dev && npm test"'
+                    bat '"%DOCKER%" compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
                 }
             }
         }
