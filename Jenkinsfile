@@ -21,8 +21,8 @@ pipeline {
 
         stage('Check Docker') {
             steps {
-                bat '"%DOCKER%" --version'
-                bat '"%DOCKER%" compose version'
+                sh '"%DOCKER%" --version'
+                sh '"%DOCKER%" compose version'
             }
         }
 
@@ -35,9 +35,9 @@ stage('Test') {
                 variable: 'DB_PASSWORD'
             )
         ]) {
-            bat '"%DOCKER%" compose up -d --wait --remove-orphans database'
+            sh '"%DOCKER%" compose up -d --wait --remove-orphans database'
 
-            bat '"%DOCKER%" compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
+            sh '"%DOCKER%" compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
         }
     }
 }
@@ -51,7 +51,7 @@ stage('Test') {
                         variable: 'DB_PASSWORD'
                     )
                 ]) {
-                    bat '"%DOCKER%" compose build'
+                    sh '"%DOCKER%" compose build'
                 }
             }
         }
@@ -64,14 +64,14 @@ stage('Test') {
                         variable: 'DB_PASSWORD'
                     )
                 ]) {
-                    bat '"%DOCKER%" compose up -d --no-build --wait'
+                    sh '"%DOCKER%" compose up -d --no-build --wait'
                 }
             }
         }
 
         stage('Smoke Test') {
             steps {
-                bat 'curl.exe --fail http://localhost:8083/health'
+                sh 'curl.exe --fail http://localhost:8083/health'
             }
         }
     }
@@ -79,7 +79,7 @@ stage('Test') {
     post {
         always {
             script {
-                bat(
+                sh(
                     script: '"%DOCKER%" compose ps',
                     returnStatus: true
                 )
