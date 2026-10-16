@@ -19,12 +19,12 @@ pipeline {
             }
         }
 
-        stage('Check Docker') {
-            steps {
-                bat 'echo Checking Docker executable'
-                bat '"%DOCKER%" --version'
-            }
-        }
+      stage('Check Docker') {
+    steps {
+        bat '"%DOCKER%" --version'
+        bat '"%DOCKER%" compose version'
+    }
+}
 
         stage('Test') {
             steps {
