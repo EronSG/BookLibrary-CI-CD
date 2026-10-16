@@ -1,5 +1,12 @@
 
 pipeline {
+environment {
+    DOCKER = 'C:\\Users\\Arceo\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
+    DB_NAME = 'library'
+    DB_USER = 'libraryuser'
+    APP_PORT = '8083'
+    COMPOSE_PROJECT_NAME = 'booklibrary-final'
+}
     agent any
 
     triggers {
