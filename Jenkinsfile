@@ -1,4 +1,6 @@
-```groovy
+
+
+
 pipeline {
     agent any
 
@@ -14,6 +16,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Check Docker') {
+            steps {
+                bat 'echo Checking Docker executable'
+                bat '"%DOCKER%" --version'
             }
         }
 
@@ -83,4 +92,4 @@ pipeline {
         }
     }
 }
-```
+
