@@ -1,0 +1,106 @@
+services:
+  database:
+    image: postgres:17.6-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-library}
+      POSTGRES_USER: ${DB_USER:-libraryuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Copy .env.example to .env and set DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [app-private]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-libraryuser} -d ${DB_NAME:-library}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  book-api:
+    image: booklibrary-api:${IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-library}
+      DB_USER: ${DB_USER:-libraryuser}
+      DB_PASSWORD: ${DB_PASSWORD:?Copy .env.example to .env and set DB_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks: [app-private]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 10s
+
+  frontend:
+    image: booklibrary-frontend:${IMAGE_TAG:-local}
+    build: ./frontend
+    restart: unless-stopped
+    networks: [app-private]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 5s
+
+  reports:
+    image: booklibrary-reports:${IMAGE_TAG:-local}
+    build: ./reports
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-library}
+      DB_USER: ${DB_USER:-libraryuser}
+      DB_PASSWORD: ${DB_PASSWORD:?Copy .env.example to .env and set DB_PASSWORD}
+    depends_on:
+      database:
+        condition: service_healthy
+    networks: [app-private]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 10s
+
+  proxy:
+    image: booklibrary-proxy:${IMAGE_TAG:-local}
+    build: ./proxy
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8082}:80"
+    depends_on:
+      book-api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+      reports:
+        condition: service_healthy
+    networks: [app-private]
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 4s
+      retries: 5
+      start_period: 5s
+
+networks:
+  app-private:
+    driver: bridge
+
+volumes:
+  postgres_data:

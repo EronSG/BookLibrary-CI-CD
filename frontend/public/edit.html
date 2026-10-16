@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Edit Book</title></head>
+<body>
+  <h1>Edit Book</h1>
+  <input id="title" placeholder="Title"><br><br>
+  <input id="author" placeholder="Author"><br><br>
+  <input id="year" type="number" placeholder="Year"><br><br>
+  <button onclick="saveBook()">Save</button>
+  <a href="index.html">Cancel</a>
+  <script>
+    const id = new URLSearchParams(location.search).get('id');
+    async function loadBook() {
+      const book = await fetch('/api/books/' + id).then(r => r.json());
+      document.getElementById('title').value = book.title;
+      document.getElementById('author').value = book.author;
+      document.getElementById('year').value = book.year ?? '';
+    }
+    async function saveBook() {
+      const response = await fetch('/api/books/' + id, {
+        method: 'PUT', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          title: document.getElementById('title').value,
+          author: document.getElementById('author').value,
+          year: document.getElementById('year').value || null
+        })
+      });
+      if (!response.ok) return alert((await response.json()).error);
+      location.href = 'index.html';
+    }
+    loadBook();
+  </script>
+</body>
+</html>

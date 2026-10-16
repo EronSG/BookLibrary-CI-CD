@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Users & Loans</title></head>
+<body>
+  <h1>Users & Loans</h1>
+  <nav><a href="index.html">Books & Search</a> | <a href="users.html">Users & Loans</a></nav>
+
+  <h2>Module 3: User Management</h2>
+  <input id="name" placeholder="Name">
+  <input id="email" placeholder="Email">
+  <button onclick="addUser()">Add User</button>
+  <ul id="users"></ul>
+
+  <h2>Borrow a Book</h2>
+  <input id="userId" type="number" placeholder="User ID">
+  <input id="bookId" type="number" placeholder="Book ID">
+  <button onclick="borrowBook()">Borrow</button>
+
+  <h2>Loans</h2>
+  <ul id="loans"></ul>
+
+  <script>
+    async function loadUsers() {
+      const users = await fetch('/api/users').then(r => r.json());
+      document.getElementById('users').innerHTML = users.map(u =>
+        `<li>ID ${u.id}: ${u.name} (${u.email}) <button onclick="deleteUser(${u.id})">Delete</button></li>`).join('');
+    }
+    // async function addUser() {
+    //   const response = await fetch('/api/users', {
+    //     method: 'POST', headers: {'Content-Type': 'application/json'},
+    //     body: JSON.stringify({ name: name.value, email: email.value })
+    //   });
+    //   if (!response.ok) return alert((await response.json()).error);
+    //   name.value = ''; email.value = ''; loadUsers();
+    // }
+
+    async function addUser() {
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+
+      if (!name || !email) {
+        return alert('Please enter both name and email.');
+      }
+
+      const response = await fetch('/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name,
+          email: email
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return alert(data.error || 'Failed to add user.');
+      }
+
+      nameInput.value = '';
+      emailInput.value = '';
+
+      loadUsers();
+    }
+    async function deleteUser(id) {
+      await fetch('/api/users/' + id, { method: 'DELETE' }); loadUsers(); loadLoans();
+    }
+    async function borrowBook() {
+      const response = await fetch('/api/users/loans', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ user_id: userId.value, book_id: bookId.value })
+      });
+      if (!response.ok) return alert((await response.json()).error);
+      loadLoans();
+    }
+    async function loadLoans() {
+      const loans = await fetch('/api/users/loans/all').then(r => r.json());
+      document.getElementById('loans').innerHTML = loans.map(l =>
+        `<li>#${l.id}: ${l.user_name} borrowed "${l.book_title}" — ${l.status}
+        ${l.status === 'borrowed' ? `<button onclick="returnBook(${l.id})">Return</button>` : ''}</li>`).join('');
+    }
+    async function returnBook(id) {
+      await fetch('/api/users/loans/' + id + '/return', { method: 'PUT' }); loadLoans();
+    }
+    loadUsers(); loadLoans();
+  </script>
+</body>
+</html>

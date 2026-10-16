@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyLibrary</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+    nav { margin-bottom: 25px; } nav a { margin-right: 15px; }
+    input, button { padding: 8px; margin: 4px; } li { margin: 8px 0; }
+  </style>
+</head>
+<body>
+  <h1>MyLibrary</h1>
+  <nav><a href="index.html">Books & Search</a><a href="users.html">Users & Loans</a></nav>
+
+  <h2>Module 1: Book Management</h2>
+  <input id="title" placeholder="Title">
+  <input id="author" placeholder="Author">
+  <input id="year" type="number" placeholder="Year">
+  <button onclick="addBook()">Add Book</button>
+  <ul id="books"></ul>
+
+  <h2>Library Reports (Reports Service)</h2>
+  <button onclick="loadReport()">Refresh Summary</button>
+  <p id="reportSummary">Click refresh to load library statistics.</p>
+
+  <h2>Module 2: Library Search</h2>
+  <input id="search" placeholder="Title to search">
+  <button onclick="lookup()">Search OpenLibrary</button>
+  <ul id="results"></ul>
+
+  <script>
+    async function loadBooks() {
+      const books = await fetch('/api/books').then(r => r.json());
+      document.getElementById('books').innerHTML = books.map(b =>
+        `<li>${b.title} by ${b.author} (${b.year ?? 'N/A'})
+          <a href="edit.html?id=${b.id}">Edit</a>
+          <button onclick="deleteBook(${b.id})">Delete</button>
+        </li>`).join('');
+    }
+
+    async function addBook() {
+      const book = {
+        title: document.getElementById('title').value,
+        author: document.getElementById('author').value,
+        year: document.getElementById('year').value || null
+      };
+      const response = await fetch('/api/books', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(book)
+      });
+      if (!response.ok) return alert((await response.json()).error);
+      document.getElementById('title').value = '';
+      document.getElementById('author').value = '';
+      document.getElementById('year').value = '';
+      loadBooks();
+      loadReport();
+    }
+
+    async function deleteBook(id) {
+      await fetch('/api/books/' + id, { method: 'DELETE' });
+      loadBooks();
+      loadReport();
+    }
+
+    async function loadReport() {
+      const response = await fetch('/api/reports/summary');
+      if (!response.ok) return document.getElementById('reportSummary').textContent = 'Report service is unavailable.';
+      const r = await response.json();
+      document.getElementById('reportSummary').textContent = `Books: ${r.total_books} | Users: ${r.total_users} | Active loans: ${r.active_loans} | Returned loans: ${r.returned_loans}`;
+    }
+
+    async function lookup() {
+      const title = encodeURIComponent(document.getElementById('search').value);
+      const results = await fetch('/api/library/search?title=' + title).then(r => r.json());
+      document.getElementById('results').innerHTML = results.map(r =>
+        `<li>${r.title} by ${r.author} (${r.year ?? 'N/A'})</li>`).join('');
+    }
+
+    loadBooks();
+    loadReport();
+  </script>
+</body>
+</html>
