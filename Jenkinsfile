@@ -1,6 +1,9 @@
 pipeline {
     agent any
-    triggers { githubPush() }
+    triggers { 
+        githubPush() 
+        pollSCM('H/2 * * * *')
+        }
     options {
         timestamps()
         disableConcurrentBuilds()
