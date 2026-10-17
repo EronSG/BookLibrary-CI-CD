@@ -19,7 +19,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'booklibrary-db-password', variable: 'DB_PASSWORD')]) {
                     sh 'docker compose up -d --wait database'
-                    sh 'docker compose run --rm --build book-api sh -c "npm ci --include=dev && npm test"'
+                    sh 'docker compose run --rm --build --user root book-api sh -c "npm ci --include=dev && npm test"'
                 }
             }
         }
