@@ -20,7 +20,7 @@ services:
   book-api:
     image: booklibrary-api:${IMAGE_TAG:-local}
     build:
-      context: .
+      context: ./book-api
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
