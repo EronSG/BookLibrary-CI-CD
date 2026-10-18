@@ -225,13 +225,6 @@ The pipeline is defined as code in the `Jenkinsfile` at the repository root (dec
 
 Jenkins stops at the first failed stage. Because tests run **before** Build and Deploy, broken code never reaches the running system.
 
-### Stage View
-
-<!-- Add the Jenkins Stage View screenshot to docs/ and keep this line updated -->
-![Jenkins Stage View](docs/jenkins-stage-view.png)
-
----
-
 ## 9. Team Members and Roles
 
 | Member | Role | Responsibilities |
