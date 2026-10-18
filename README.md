@@ -46,6 +46,8 @@ Each backend module exposes a `/health` endpoint used by Docker health checks an
 
 ## 2. Architecture
 
+![Book Library System Architecture]
+(docs/2architecture.png)
 
 ### Request flow
 
