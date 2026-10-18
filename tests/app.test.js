@@ -27,7 +27,3 @@ test('book creation validates required fields', async () => {
   const response = await request(app).post('/api/books').send({ title: 'Only title' });
   expect(response.statusCode).toBe(400);
 });
-
-test('intentional failure for pipeline demo', () => {
-  expect(1).toBe(2);
-});
