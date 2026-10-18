@@ -46,28 +46,6 @@ Each backend module exposes a `/health` endpoint used by Docker health checks an
 
 ## 2. Architecture
 
-```mermaid
-flowchart TD
-    J["Jenkins<br/>Build, Deploy, Test"]
-    B["Browser<br/>Host:8083"]
-    N["Nginx Reverse Proxy<br/>Public entry point: 80"]
-    A["Book API Module<br/>Express:3000"]
-    R["Reports Module<br/>Express:3002"]
-    F["Frontend Module<br/>Express:3001"]
-    P[("PostgreSQL:5432")]
-    V[("postgres_data<br/>Persistent Volume")]
-
-    B -->|HTTP| N
-    N -->|/api/books, users| A
-    N -->|/api/reports| R
-    N -->|Web pages| F
-    A -->|SQL CRUD| P
-    R -->|Read-only SQL| P
-    P -->|Data| V
-    J -.->|Build, Deploy, Test| A
-```
-
-> The full diagram image is also included in `docs/architecture.png`.
 
 ### Request flow
 
