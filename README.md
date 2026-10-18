@@ -243,4 +243,4 @@ The full technical documentation (architecture, Dockerfile and Compose explanati
 
 ---
 
-*Submitted October 17, 2026 for ITE-302, Doc. Harwin Mendoza.*
+*Submitted October 18, 2026 for ITE-302, Doc. Harwin Mendoza.*
